@@ -1,0 +1,5 @@
+<resources>
+    <!-- Placeholder launcher background — replace with real app icon assets before release.
+         Use Android Studio's Image Asset tool with the lavender primary (#8A68E1). -->
+    <color name="ic_launcher_background">#8A68E1</color>
+</resources>

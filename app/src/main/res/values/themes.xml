@@ -1,0 +1,5 @@
+<resources>
+    <!-- Base platform theme; actual Material 3 color scheme is applied in
+         Compose via core/designsystem/Theme.kt (StudentCompanionTheme). -->
+    <style name="Theme.StudentCompanion" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

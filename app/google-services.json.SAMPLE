@@ -1,0 +1,4 @@
+{
+  "_comment": "Placeholder. Download the real google-services.json from the Firebase console (Project settings > Your apps > Android app) for package com.studentcompanion.app, and place it at app/google-services.json. Do not commit the real file with production keys to a public repo.",
+  "project_info": { "project_id": "REPLACE_ME" }
+}
