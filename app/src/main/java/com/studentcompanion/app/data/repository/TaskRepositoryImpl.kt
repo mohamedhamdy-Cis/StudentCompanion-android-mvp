@@ -6,6 +6,8 @@ import com.studentcompanion.app.core.util.Constants
 import com.studentcompanion.app.core.util.Result
 import com.studentcompanion.app.data.mapper.toDomain
 import com.studentcompanion.app.data.model.TaskDto
+import com.studentcompanion.app.data.remote.aladhan.AladhanPrayerTimesDataSource
+import com.studentcompanion.app.data.remote.aladhan.PrayerTime
 import com.studentcompanion.app.data.remote.firebase.FirebaseStorageDataSource
 import com.studentcompanion.app.data.remote.firebase.FirestoreTaskDataSource
 import com.studentcompanion.app.domain.model.Task
@@ -22,6 +24,7 @@ import javax.inject.Inject
 class TaskRepositoryImpl @Inject constructor(
     private val taskDataSource: FirestoreTaskDataSource,
     private val storageDataSource: FirebaseStorageDataSource,
+    private val prayerTimesDataSource: AladhanPrayerTimesDataSource,
 ) : TaskRepository {
 
     override fun getDailyTasks(studentId: String): Flow<List<Task>> =
@@ -40,7 +43,11 @@ class TaskRepositoryImpl @Inject constructor(
             .filter { it.type.name == "PRAYER" }
             .filter { it.dueAt.atZone(zone).toLocalDate() == today }
         if (existing.isEmpty()) {
-            DefaultPrayers.forEach { prayer ->
+            // Live times from Aladhan when reachable; fixed Riyadh-ish seed times otherwise,
+            // so a flaky connection never blocks seeding today's prayer tasks.
+            val prayers = runCatching { prayerTimesDataSource.todaysPrayerTimes() }
+                .getOrDefault(DefaultPrayers)
+            prayers.forEach { prayer ->
                 val dueAt = today.atTime(prayer.time).atZone(zone).toInstant()
                 taskDataSource.createTask(
                     TaskDto(
@@ -75,15 +82,14 @@ class TaskRepositoryImpl @Inject constructor(
         Result.Error(e.message ?: "Couldn't submit homework", e)
     }
 
-    private data class PrayerSeed(val title: String, val time: LocalTime)
-
     private companion object {
+        // Fallback only — used when the Aladhan API is unreachable.
         val DefaultPrayers = listOf(
-            PrayerSeed("Fajr", LocalTime.of(5, 0)),
-            PrayerSeed("Dhuhr", LocalTime.of(12, 15)),
-            PrayerSeed("Asr", LocalTime.of(15, 30)),
-            PrayerSeed("Maghrib", LocalTime.of(18, 15)),
-            PrayerSeed("Isha", LocalTime.of(19, 45)),
+            PrayerTime("Fajr", LocalTime.of(5, 0)),
+            PrayerTime("Dhuhr", LocalTime.of(12, 15)),
+            PrayerTime("Asr", LocalTime.of(15, 30)),
+            PrayerTime("Maghrib", LocalTime.of(18, 15)),
+            PrayerTime("Isha", LocalTime.of(19, 45)),
         )
     }
 }
