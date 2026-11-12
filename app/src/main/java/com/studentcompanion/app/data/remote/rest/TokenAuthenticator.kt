@@ -27,16 +27,20 @@ class TokenAuthenticator @Inject constructor(
     override fun authenticate(route: Route?, response: Response): Request? {
         if (responseCount(response) >= 2) return null // already retried once — give up
 
+        val staleAccessToken = response.request.header("Authorization")?.removePrefix("Bearer ")
+
+        // Fast path: if another caller already refreshed before this one got here,
+        // retry with the current token immediately — no lock, no network call, no
+        // blocking a dispatcher thread for a refresh this request doesn't need.
+        currentTokenIfChanged(staleAccessToken)?.let { return it.toAuthorizedRequest(response) }
+
         return synchronized(this) {
             runBlocking {
-                val staleAccessToken = response.request.header("Authorization")?.removePrefix("Bearer ")
+                // Re-check inside the lock: another thread may have refreshed while
+                // this one was waiting to acquire it.
                 val current = tokenStore.current() ?: return@runBlocking null
-
                 if (current.accessToken != staleAccessToken) {
-                    // Another request already refreshed while we waited for the lock.
-                    return@runBlocking response.request.newBuilder()
-                        .header("Authorization", "Bearer ${current.accessToken}")
-                        .build()
+                    return@runBlocking current.toAuthorizedRequest(response)
                 }
 
                 val refreshed = runCatching {
@@ -48,13 +52,18 @@ class TokenAuthenticator @Inject constructor(
                     return@runBlocking null
                 }
 
-                tokenStore.save(AuthTokens(refreshed.accessToken, refreshed.refreshToken))
-                response.request.newBuilder()
-                    .header("Authorization", "Bearer ${refreshed.accessToken}")
-                    .build()
+                val newTokens = AuthTokens(refreshed.accessToken, refreshed.refreshToken)
+                tokenStore.save(newTokens)
+                newTokens.toAuthorizedRequest(response)
             }
         }
     }
+
+    private fun currentTokenIfChanged(staleAccessToken: String?): AuthTokens? =
+        runBlocking { tokenStore.current() }?.takeIf { it.accessToken != staleAccessToken }
+
+    private fun AuthTokens.toAuthorizedRequest(response: Response): Request =
+        response.request.newBuilder().header("Authorization", "Bearer $accessToken").build()
 
     private fun responseCount(response: Response): Int {
         var result = 1

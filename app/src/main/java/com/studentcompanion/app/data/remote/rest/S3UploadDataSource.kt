@@ -1,10 +1,14 @@
 package com.studentcompanion.app.data.remote.rest
 
 import android.net.Uri
+import com.studentcompanion.app.core.util.Constants
 import com.studentcompanion.app.core.util.ImageCompressor
 import com.studentcompanion.app.data.remote.rest.dto.PresignUploadRequest
 import com.studentcompanion.app.data.remote.rest.dto.SubmitHomeworkAttachment
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -30,6 +34,9 @@ class S3UploadDataSource @Inject constructor(
     suspend fun uploadHomeworkImage(taskId: String, uri: Uri): SubmitHomeworkAttachment =
         withContext(Dispatchers.Default) {
             val bytes = imageCompressor.compress(uri)
+            require(bytes.size <= Constants.MAX_ATTACHMENT_SIZE_BYTES) {
+                "Image is still over 5 MB after compression"
+            }
             val presigned = api.presignUpload(
                 taskId,
                 PresignUploadRequest(contentType = JPEG_CONTENT_TYPE, sizeBytes = bytes.size.toLong()),
@@ -46,6 +53,13 @@ class S3UploadDataSource @Inject constructor(
             SubmitHomeworkAttachment(url = presigned.publicUrl, sizeBytes = bytes.size.toLong())
         }
 
+    // Concurrent since each image is an independent round trip (compress -> presign -> PUT).
+    // NOTE: not atomic — if image 2 of 3 fails, image 1's upload still succeeded and is now
+    // orphaned in object storage with no DB reference (submitHomework is never called). This
+    // mirrors FirebaseStorageDataSource.uploadHomeworkImages's existing behavior; a real fix
+    // needs a backend delete-attachment endpoint to roll back the already-succeeded uploads.
     suspend fun uploadHomeworkImages(taskId: String, uris: List<Uri>): List<SubmitHomeworkAttachment> =
-        uris.map { uploadHomeworkImage(taskId, it) }
+        coroutineScope {
+            uris.map { uri -> async { uploadHomeworkImage(taskId, uri) } }.awaitAll()
+        }
 }

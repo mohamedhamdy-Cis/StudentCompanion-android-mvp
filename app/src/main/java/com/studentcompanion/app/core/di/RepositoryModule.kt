@@ -16,6 +16,7 @@ import com.studentcompanion.app.domain.repository.NoteRepository
 import com.studentcompanion.app.domain.repository.PointsRepository
 import com.studentcompanion.app.domain.repository.SubjectRepository
 import com.studentcompanion.app.domain.repository.TaskRepository
+import dagger.Lazy
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,8 +28,11 @@ import javax.inject.Singleton
  *
  * *** THIS IS THE MIGRATION SEAM ***
  * [BuildConfig.USE_REST_BACKEND] picks Firebase (false, default) or the REST
- * backend (true) — both implementations are compiled in and injectable so a
- * soak test only ever requires flipping the flag, per docs/BACKEND_MIGRATION.md.
+ * backend (true) — both implementations are compiled in so a soak test only
+ * ever requires flipping the flag, per docs/BACKEND_MIGRATION.md. Both sides
+ * are injected as [Lazy] and only the picked one's `.get()` is called, so
+ * only the active backend's dependency graph (OkHttp clients, DataStore,
+ * etc.) actually gets constructed — not both.
  * No ViewModel, use case, or Composable needs to change either way, since
  * they only ever depend on the domain interfaces (AuthRepository, etc.).
  */
@@ -39,35 +43,35 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideAuthRepository(
-        firebaseImpl: AuthRepositoryImpl,
-        restImpl: RestAuthRepositoryImpl,
-    ): AuthRepository = if (BuildConfig.USE_REST_BACKEND) restImpl else firebaseImpl
+        firebaseImpl: Lazy<AuthRepositoryImpl>,
+        restImpl: Lazy<RestAuthRepositoryImpl>,
+    ): AuthRepository = if (BuildConfig.USE_REST_BACKEND) restImpl.get() else firebaseImpl.get()
 
     @Provides
     @Singleton
     fun provideNoteRepository(
-        firebaseImpl: NoteRepositoryImpl,
-        restImpl: RestNoteRepositoryImpl,
-    ): NoteRepository = if (BuildConfig.USE_REST_BACKEND) restImpl else firebaseImpl
+        firebaseImpl: Lazy<NoteRepositoryImpl>,
+        restImpl: Lazy<RestNoteRepositoryImpl>,
+    ): NoteRepository = if (BuildConfig.USE_REST_BACKEND) restImpl.get() else firebaseImpl.get()
 
     @Provides
     @Singleton
     fun provideTaskRepository(
-        firebaseImpl: TaskRepositoryImpl,
-        restImpl: RestTaskRepositoryImpl,
-    ): TaskRepository = if (BuildConfig.USE_REST_BACKEND) restImpl else firebaseImpl
+        firebaseImpl: Lazy<TaskRepositoryImpl>,
+        restImpl: Lazy<RestTaskRepositoryImpl>,
+    ): TaskRepository = if (BuildConfig.USE_REST_BACKEND) restImpl.get() else firebaseImpl.get()
 
     @Provides
     @Singleton
     fun provideSubjectRepository(
-        firebaseImpl: SubjectRepositoryImpl,
-        restImpl: RestSubjectRepositoryImpl,
-    ): SubjectRepository = if (BuildConfig.USE_REST_BACKEND) restImpl else firebaseImpl
+        firebaseImpl: Lazy<SubjectRepositoryImpl>,
+        restImpl: Lazy<RestSubjectRepositoryImpl>,
+    ): SubjectRepository = if (BuildConfig.USE_REST_BACKEND) restImpl.get() else firebaseImpl.get()
 
     @Provides
     @Singleton
     fun providePointsRepository(
-        firebaseImpl: PointsRepositoryImpl,
-        restImpl: RestPointsRepositoryImpl,
-    ): PointsRepository = if (BuildConfig.USE_REST_BACKEND) restImpl else firebaseImpl
+        firebaseImpl: Lazy<PointsRepositoryImpl>,
+        restImpl: Lazy<RestPointsRepositoryImpl>,
+    ): PointsRepository = if (BuildConfig.USE_REST_BACKEND) restImpl.get() else firebaseImpl.get()
 }

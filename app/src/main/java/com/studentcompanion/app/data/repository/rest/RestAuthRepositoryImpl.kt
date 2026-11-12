@@ -1,6 +1,7 @@
 package com.studentcompanion.app.data.repository.rest
 
 import com.studentcompanion.app.core.util.Result
+import com.studentcompanion.app.core.util.safeCall
 import com.studentcompanion.app.data.remote.rest.AuthTokens
 import com.studentcompanion.app.data.remote.rest.StudentCompanionApi
 import com.studentcompanion.app.data.remote.rest.TokenStore
@@ -20,20 +21,30 @@ class RestAuthRepositoryImpl @Inject constructor(
     private val tokenStore: TokenStore,
 ) : AuthRepository {
 
-    // Re-derives the current user from /auth/me whenever the stored tokens
-    // change (login, logout, or a background refresh) — no separate cache to
-    // keep in sync, at the cost of one extra call per token rotation.
+    // Last user successfully fetched/returned by the server, kept so a transient
+    // /auth/me failure (offline, timeout, 5xx) degrades to "last known user"
+    // instead of "logged out" — only an actual missing token (real logout, or a
+    // refresh that TokenAuthenticator gave up on and cleared) should report null.
+    @Volatile
+    private var cachedUser: User? = null
+
     override fun currentUser(): Flow<User?> = tokenStore.tokens.map { tokens ->
-        if (tokens == null) null else runCatching { api.me().toDomain() }.getOrNull()
+        if (tokens == null) {
+            cachedUser = null
+            null
+        } else {
+            runCatching { api.me().toDomain() }
+                .onSuccess { cachedUser = it }
+                .getOrElse { cachedUser }
+        }
     }
 
-    override suspend fun login(username: String, password: String): Result<User> = try {
-        val response = api.login(LoginRequest(username, password))
-        tokenStore.save(AuthTokens(response.accessToken, response.refreshToken))
-        Result.Success(response.user.toDomain())
-    } catch (e: Exception) {
-        Result.Error(e.message ?: "Login failed", e)
-    }
+    override suspend fun login(username: String, password: String): Result<User> =
+        safeCall("Login failed") {
+            val response = api.login(LoginRequest(username, password))
+            tokenStore.save(AuthTokens(response.accessToken, response.refreshToken))
+            response.user.toDomain().also { cachedUser = it }
+        }
 
     // The backend always creates a STUDENT regardless of [role] — self-registration
     // can't elevate its own privileges (see RegisterDto in the backend repo).
@@ -42,12 +53,10 @@ class RestAuthRepositoryImpl @Inject constructor(
         password: String,
         fullName: String,
         role: UserRole,
-    ): Result<User> = try {
+    ): Result<User> = safeCall("Registration failed") {
         val response = api.register(RegisterRequest(username, password, fullName))
         tokenStore.save(AuthTokens(response.accessToken, response.refreshToken))
-        Result.Success(response.user.toDomain())
-    } catch (e: Exception) {
-        Result.Error(e.message ?: "Registration failed", e)
+        response.user.toDomain().also { cachedUser = it }
     }
 
     override suspend fun logout() {
@@ -56,5 +65,6 @@ class RestAuthRepositoryImpl @Inject constructor(
             runCatching { api.logout(RefreshRequest(refreshToken)) }
         }
         tokenStore.clear()
+        cachedUser = null
     }
 }
