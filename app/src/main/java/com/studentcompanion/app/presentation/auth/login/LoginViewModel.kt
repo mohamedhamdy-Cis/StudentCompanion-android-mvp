@@ -3,6 +3,7 @@ package com.studentcompanion.app.presentation.auth.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.studentcompanion.app.core.util.Result
+import com.studentcompanion.app.domain.model.UserRole
 import com.studentcompanion.app.domain.usecase.auth.LoginUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +19,7 @@ data class LoginUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val loginSuccess: Boolean = false,
+    val loggedInRole: UserRole? = null,
 )
 
 @HiltViewModel
@@ -36,7 +38,9 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             when (val result = loginUseCase(state.username, state.password)) {
-                is Result.Success -> _uiState.update { it.copy(isLoading = false, loginSuccess = true) }
+                is Result.Success -> _uiState.update {
+                    it.copy(isLoading = false, loginSuccess = true, loggedInRole = result.data.role)
+                }
                 is Result.Error -> _uiState.update { it.copy(isLoading = false, errorMessage = result.message) }
                 Result.Loading -> Unit
             }

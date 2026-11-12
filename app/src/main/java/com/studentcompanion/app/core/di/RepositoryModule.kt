@@ -8,11 +8,13 @@ import com.studentcompanion.app.data.repository.SubjectRepositoryImpl
 import com.studentcompanion.app.data.repository.TaskRepositoryImpl
 import com.studentcompanion.app.data.repository.rest.RestAuthRepositoryImpl
 import com.studentcompanion.app.data.repository.rest.RestNoteRepositoryImpl
+import com.studentcompanion.app.data.repository.rest.RestParentLinkRepositoryImpl
 import com.studentcompanion.app.data.repository.rest.RestPointsRepositoryImpl
 import com.studentcompanion.app.data.repository.rest.RestSubjectRepositoryImpl
 import com.studentcompanion.app.data.repository.rest.RestTaskRepositoryImpl
 import com.studentcompanion.app.domain.repository.AuthRepository
 import com.studentcompanion.app.domain.repository.NoteRepository
+import com.studentcompanion.app.domain.repository.ParentLinkRepository
 import com.studentcompanion.app.domain.repository.PointsRepository
 import com.studentcompanion.app.domain.repository.SubjectRepository
 import com.studentcompanion.app.domain.repository.TaskRepository
@@ -74,4 +76,11 @@ object RepositoryModule {
         firebaseImpl: Lazy<PointsRepositoryImpl>,
         restImpl: Lazy<RestPointsRepositoryImpl>,
     ): PointsRepository = if (BuildConfig.USE_REST_BACKEND) restImpl.get() else firebaseImpl.get()
+
+    // No Firebase/Firestore implementation exists for this one — parent<->student
+    // linking is a new, REST-backend-only capability (Sprint 5). Always talks to
+    // the REST backend regardless of USE_REST_BACKEND; see ParentLinkRepository.
+    @Provides
+    @Singleton
+    fun provideParentLinkRepository(impl: RestParentLinkRepositoryImpl): ParentLinkRepository = impl
 }

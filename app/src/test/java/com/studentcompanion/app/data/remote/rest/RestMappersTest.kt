@@ -1,5 +1,6 @@
 package com.studentcompanion.app.data.remote.rest
 
+import com.studentcompanion.app.data.remote.rest.dto.LinkCodeResponse
 import com.studentcompanion.app.data.remote.rest.dto.RestSubjectDto
 import com.studentcompanion.app.data.remote.rest.dto.RestTaskAttachmentDto
 import com.studentcompanion.app.data.remote.rest.dto.RestTaskDto
@@ -22,7 +23,6 @@ class RestMappersTest {
             role = "PARENT",
             schoolId = null,
             classId = null,
-            parentId = null,
         )
         assertEquals(UserRole.PARENT, dto.toDomain().role)
     }
@@ -36,7 +36,6 @@ class RestMappersTest {
             role = "SOME_FUTURE_ROLE",
             schoolId = null,
             classId = null,
-            parentId = null,
         )
         assertEquals(UserRole.STUDENT, dto.toDomain().role)
     }
@@ -91,5 +90,13 @@ class RestMappersTest {
         val subject = dto.toDomain()
         assertEquals("#123456", subject.colorHex)
         assertEquals("Math", subject.name)
+    }
+
+    @Test
+    fun `LinkCodeResponse parses the ISO expiresAt instant`() {
+        val dto = LinkCodeResponse(code = "ABC123", expiresAt = "2026-01-11T05:00:00.000Z")
+        val linkCode = dto.toDomain()
+        assertEquals("ABC123", linkCode.code)
+        assertEquals(Instant.parse("2026-01-11T05:00:00.000Z"), linkCode.expiresAt)
     }
 }
