@@ -19,6 +19,14 @@ android {
         versionName = "0.1.0-mvp"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // *** SPRINT 4 MIGRATION FLAG ***
+        // false keeps the app on the Firebase backend (RepositoryModule's default).
+        // Flip to true to soak-test the REST backend (see docs/BACKEND_MIGRATION.md)
+        // with the Firebase impls still compiled in and selectable by flipping back.
+        buildConfigField("boolean", "USE_REST_BACKEND", "false")
+        // 10.0.2.2 is the emulator's alias for the host machine's localhost.
+        buildConfigField("String", "BACKEND_BASE_URL", "\"http://10.0.2.2:3000/\"")
     }
 
     buildTypes {
@@ -91,6 +99,9 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging.interceptor)
+
+    // Token storage for the REST backend (Sprint 4)
+    implementation(libs.androidx.datastore.preferences)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
