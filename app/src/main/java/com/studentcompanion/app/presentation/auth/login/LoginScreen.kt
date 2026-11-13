@@ -10,6 +10,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.studentcompanion.app.domain.model.UserRole
 
 /**
  * Login with username + password (Firebase Auth under the hood, via a
@@ -17,14 +18,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
  */
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit,
+    onLoginSuccess: (UserRole) -> Unit,
     onNavigateToRegister: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.loginSuccess) {
-        if (state.loginSuccess) onLoginSuccess()
+        val role = state.loggedInRole
+        if (state.loginSuccess && role != null) onLoginSuccess(role)
     }
 
     Column(

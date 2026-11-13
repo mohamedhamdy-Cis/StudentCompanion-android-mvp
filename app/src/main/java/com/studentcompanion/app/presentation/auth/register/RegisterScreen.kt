@@ -16,14 +16,14 @@ import com.studentcompanion.app.domain.model.UserRole
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onRegisterSuccess: () -> Unit,
+    onRegisterSuccess: (UserRole) -> Unit,
     onNavigateToLogin: () -> Unit,
     viewModel: RegisterViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(state.registerSuccess) {
-        if (state.registerSuccess) onRegisterSuccess()
+        if (state.registerSuccess) onRegisterSuccess(state.role)
     }
 
     Column(
@@ -41,7 +41,8 @@ fun RegisterScreen(
         Text("I am a", style = MaterialTheme.typography.labelMedium)
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            UserRole.entries.forEach { role ->
+            // TEACHER accounts are provisioned differently (Sprint 6) — not self-registerable yet.
+            UserRole.entries.filter { it != UserRole.TEACHER }.forEach { role ->
                 FilterChip(
                     selected = state.role == role,
                     onClick = { viewModel.onRoleChange(role) },

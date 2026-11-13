@@ -46,15 +46,16 @@ class RestAuthRepositoryImpl @Inject constructor(
             response.user.toDomain().also { cachedUser = it }
         }
 
-    // The backend always creates a STUDENT regardless of [role] — self-registration
-    // can't elevate its own privileges (see RegisterDto in the backend repo).
+    // The backend accepts STUDENT or PARENT here but never TEACHER — it
+    // validates this itself too (RegisterDto in the backend repo), so a
+    // tampered client request still can't self-assign TEACHER.
     override suspend fun register(
         username: String,
         password: String,
         fullName: String,
         role: UserRole,
     ): Result<User> = safeCall("Registration failed") {
-        val response = api.register(RegisterRequest(username, password, fullName))
+        val response = api.register(RegisterRequest(username, password, fullName, role.name))
         tokenStore.save(AuthTokens(response.accessToken, response.refreshToken))
         response.user.toDomain().also { cachedUser = it }
     }

@@ -1,11 +1,13 @@
 package com.studentcompanion.app.data.remote.rest
 
+import com.studentcompanion.app.data.remote.rest.dto.LinkCodeResponse
 import com.studentcompanion.app.data.remote.rest.dto.RestNoteDto
 import com.studentcompanion.app.data.remote.rest.dto.RestPointsLedgerEntryDto
 import com.studentcompanion.app.data.remote.rest.dto.RestSubjectDto
 import com.studentcompanion.app.data.remote.rest.dto.RestTaskAttachmentDto
 import com.studentcompanion.app.data.remote.rest.dto.RestTaskDto
 import com.studentcompanion.app.data.remote.rest.dto.RestUserDto
+import com.studentcompanion.app.domain.model.LinkCode
 import com.studentcompanion.app.domain.model.Note
 import com.studentcompanion.app.domain.model.PointsEntry
 import com.studentcompanion.app.domain.model.Subject
@@ -27,7 +29,7 @@ fun RestUserDto.toDomain() = User(
     role = runCatching { UserRole.valueOf(role) }.getOrDefault(UserRole.STUDENT),
     schoolId = schoolId,
     classId = classId,
-    parentId = parentId,
+    parentId = null, // parent/student linking is now ParentStudentLink, not a scalar field — see ParentLinkRepository
 )
 
 fun RestSubjectDto.toDomain() = Subject(
@@ -68,6 +70,11 @@ fun RestTaskDto.toDomain() = Task(
     studentComment = studentComment,
     teacherComment = teacherComment,
     attachments = attachments.map { it.toDomain() },
+)
+
+fun LinkCodeResponse.toDomain() = LinkCode(
+    code = code,
+    expiresAt = Instant.parse(expiresAt),
 )
 
 fun RestPointsLedgerEntryDto.toDomain() = PointsEntry(

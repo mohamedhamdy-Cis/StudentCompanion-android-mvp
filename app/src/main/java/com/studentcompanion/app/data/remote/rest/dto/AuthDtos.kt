@@ -10,13 +10,13 @@ data class RestUserDto(
     val role: String,
     val schoolId: String?,
     val classId: String?,
-    val parentId: String?,
 )
 
 data class RegisterRequest(
     val username: String,
     val password: String,
     val fullName: String,
+    val role: String,
 )
 
 data class LoginRequest(

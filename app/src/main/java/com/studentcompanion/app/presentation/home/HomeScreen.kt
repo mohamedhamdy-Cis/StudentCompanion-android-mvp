@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +28,7 @@ fun HomeScreen(
     onOpenHomework: () -> Unit,
     onOpenPoints: () -> Unit,
     onOpenTask: (String) -> Unit,
+    onOpenShareCode: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -41,17 +43,22 @@ fun HomeScreen(
                 Text("Assalamu alaikum,", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(state.studentName.ifBlank { "Student" }, style = MaterialTheme.typography.headlineMedium)
             }
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp).clickable { onOpenPoints() },
-                    verticalAlignment = Alignment.CenterVertically,
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onOpenShareCode) {
+                    Icon(Icons.Default.Share, contentDescription = "Share with a parent")
+                }
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
                 ) {
-                    Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("${state.pointsSummary?.totalPoints ?: 0} pts", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Row(
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp).clickable { onOpenPoints() },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("${state.pointsSummary?.totalPoints ?: 0} pts", color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    }
                 }
             }
         }

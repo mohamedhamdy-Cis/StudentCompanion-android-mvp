@@ -5,10 +5,12 @@ import com.studentcompanion.app.data.remote.rest.dto.AwardPointsRequest
 import com.studentcompanion.app.data.remote.rest.dto.CompleteTaskRequest
 import com.studentcompanion.app.data.remote.rest.dto.CreateNoteRequest
 import com.studentcompanion.app.data.remote.rest.dto.CreateSubjectRequest
+import com.studentcompanion.app.data.remote.rest.dto.LinkCodeResponse
 import com.studentcompanion.app.data.remote.rest.dto.LoginRequest
 import com.studentcompanion.app.data.remote.rest.dto.PointsSummaryResponse
 import com.studentcompanion.app.data.remote.rest.dto.PresignUploadRequest
 import com.studentcompanion.app.data.remote.rest.dto.PresignUploadResponse
+import com.studentcompanion.app.data.remote.rest.dto.RedeemCodeRequest
 import com.studentcompanion.app.data.remote.rest.dto.RefreshRequest
 import com.studentcompanion.app.data.remote.rest.dto.RegisterRequest
 import com.studentcompanion.app.data.remote.rest.dto.RestNoteDto
@@ -94,4 +96,22 @@ interface StudentCompanionApi {
 
     @POST("points/award")
     suspend fun awardPoints(@Body body: AwardPointsRequest)
+
+    @POST("students/me/link-code")
+    suspend fun generateLinkCode(): LinkCodeResponse
+
+    @POST("parent-links/redeem")
+    suspend fun redeemLinkCode(@Body body: RedeemCodeRequest): RestUserDto
+
+    @GET("parent-links/children")
+    suspend fun getChildren(): List<RestUserDto>
+
+    @DELETE("parent-links/children/{studentId}")
+    suspend fun unlinkChild(@Path("studentId") studentId: String)
+
+    @GET("parent-links/children/{studentId}/tasks")
+    suspend fun getChildTasks(@Path("studentId") studentId: String): List<RestTaskDto>
+
+    @GET("parent-links/children/{studentId}/points")
+    suspend fun getChildPointsSummary(@Path("studentId") studentId: String): PointsSummaryResponse
 }

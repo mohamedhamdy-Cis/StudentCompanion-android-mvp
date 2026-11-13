@@ -22,4 +22,12 @@ sealed class Screen(val route: String) {
     }
 
     data object Points : Screen("points")
+
+    // Parent role (Sprint 5) — REST-backend-only, see ParentLinkRepository.
+    data object ShareCode : Screen("share-code")
+    data object ParentHome : Screen("parent/home")
+    data object RedeemCode : Screen("parent/redeem")
+    data object ChildDetail : Screen("parent/child/{studentId}") {
+        fun createRoute(studentId: String) = "parent/child/$studentId"
+    }
 }

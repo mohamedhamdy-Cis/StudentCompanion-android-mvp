@@ -13,6 +13,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.studentcompanion.app.domain.model.UserRole
 import com.studentcompanion.app.presentation.auth.login.LoginScreen
 import com.studentcompanion.app.presentation.auth.register.RegisterScreen
 import com.studentcompanion.app.presentation.home.HomeScreen
@@ -21,9 +22,17 @@ import com.studentcompanion.app.presentation.homework.HomeworkSubmitScreen
 import com.studentcompanion.app.presentation.notes.NoteDetailScreen
 import com.studentcompanion.app.presentation.notes.NotesScreen
 import com.studentcompanion.app.presentation.onboarding.OnboardingSubjectsScreen
+import com.studentcompanion.app.presentation.parent.childdetail.ChildDetailScreen
+import com.studentcompanion.app.presentation.parent.home.ParentHomeScreen
+import com.studentcompanion.app.presentation.parent.redeem.RedeemCodeScreen
+import com.studentcompanion.app.presentation.parent.sharecode.ShareCodeScreen
 import com.studentcompanion.app.presentation.points.PointsScreen
 import com.studentcompanion.app.presentation.session.SessionViewModel
 import com.studentcompanion.app.presentation.task.TaskDetailScreen
+
+/** The screen a signed-in user should land on, based on their role. */
+private fun homeRouteFor(role: UserRole?): String =
+    if (role == UserRole.PARENT) Screen.ParentHome.route else Screen.Home.route
 
 /**
  * Single NavHost for the whole app. Each feature package owns its own
@@ -44,18 +53,22 @@ fun StudentCompanionNavGraph(
 
     NavHost(
         navController = navController,
-        startDestination = if (session.isLoggedIn) Screen.Home.route else Screen.Login.route,
+        startDestination = if (session.isLoggedIn) homeRouteFor(session.role) else Screen.Login.route,
     ) {
 
         composable(Screen.Login.route) {
             LoginScreen(
-                onLoginSuccess = { navController.navigate(Screen.Home.route) { popUpTo(0) } },
+                onLoginSuccess = { role -> navController.navigate(homeRouteFor(role)) { popUpTo(0) } },
                 onNavigateToRegister = { navController.navigate(Screen.Register.route) }
             )
         }
         composable(Screen.Register.route) {
             RegisterScreen(
-                onRegisterSuccess = { navController.navigate(Screen.OnboardingSubjects.route) { popUpTo(0) } },
+                onRegisterSuccess = { role ->
+                    // Subject onboarding is a student-only concept; a parent has no subjects to set up.
+                    val destination = if (role == UserRole.PARENT) Screen.ParentHome.route else Screen.OnboardingSubjects.route
+                    navController.navigate(destination) { popUpTo(0) }
+                },
                 onNavigateToLogin = { navController.popBackStack() }
             )
         }
@@ -70,8 +83,29 @@ fun StudentCompanionNavGraph(
                 onOpenNotes = { navController.navigate(Screen.Notes.route) },
                 onOpenHomework = { navController.navigate(Screen.Homework.route) },
                 onOpenPoints = { navController.navigate(Screen.Points.route) },
-                onOpenTask = { taskId -> navController.navigate(Screen.TaskDetail.createRoute(taskId)) }
+                onOpenTask = { taskId -> navController.navigate(Screen.TaskDetail.createRoute(taskId)) },
+                onOpenShareCode = { navController.navigate(Screen.ShareCode.route) }
             )
+        }
+        composable(Screen.ShareCode.route) {
+            ShareCodeScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.ParentHome.route) {
+            ParentHomeScreen(
+                onOpenChild = { studentId -> navController.navigate(Screen.ChildDetail.createRoute(studentId)) },
+                onLinkAnotherChild = { navController.navigate(Screen.RedeemCode.route) }
+            )
+        }
+        composable(Screen.RedeemCode.route) {
+            RedeemCodeScreen(
+                onBack = { navController.popBackStack() },
+                onLinked = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.ChildDetail.route) { backStackEntry ->
+            val studentId = backStackEntry.arguments?.getString("studentId").orEmpty()
+            ChildDetailScreen(studentId = studentId, onBack = { navController.popBackStack() })
         }
 
         composable(Screen.Notes.route) {
