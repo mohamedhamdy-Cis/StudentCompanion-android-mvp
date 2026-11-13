@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.google.services)
 }
 
 android {
@@ -20,12 +19,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // *** SPRINT 4 MIGRATION FLAG ***
-        // false keeps the app on the Firebase backend (RepositoryModule's default).
-        // Flip to true to soak-test the REST backend (see docs/BACKEND_MIGRATION.md)
-        // with the Firebase impls still compiled in and selectable by flipping back.
-        buildConfigField("boolean", "USE_REST_BACKEND", "false")
-        // 10.0.2.2 is the emulator's alias for the host machine's localhost.
+        // 10.0.2.2 is the emulator's alias for the host machine's localhost. A release
+        // build needs this pointed at a deployed HTTPS backend before it can work.
         buildConfigField("String", "BACKEND_BASE_URL", "\"http://10.0.2.2:3000/\"")
     }
 
@@ -83,24 +78,16 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.kotlinx.coroutines.play.services)
-
-    // Firebase (MVP backend — see /docs/BACKEND_MIGRATION.md for the REST migration path)
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage)
-    implementation(libs.firebase.messaging)
 
     // Image loading (homework attachments, avatars)
     implementation(libs.coil.compose)
 
-    // Networking (Aladhan prayer-times API; also the REST migration path's future home)
+    // Networking (the NestJS backend)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
     implementation(libs.okhttp.logging.interceptor)
 
-    // Token storage for the REST backend (Sprint 4)
+    // Auth token storage
     implementation(libs.androidx.datastore.preferences)
 
     testImplementation(libs.junit)

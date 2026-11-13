@@ -15,11 +15,7 @@ data class AuthTokens(val accessToken: String, val refreshToken: String)
 
 private val Context.authDataStore by preferencesDataStore(name = "auth_tokens")
 
-/**
- * Persists the access/refresh token pair for the REST backend. Separate from
- * Firebase Auth's own session handling — only used when
- * [com.studentcompanion.app.BuildConfig.USE_REST_BACKEND] is true.
- */
+/** Persists the access/refresh token pair for the backend. */
 @Singleton
 class TokenStore @Inject constructor(@ApplicationContext private val context: Context) {
 

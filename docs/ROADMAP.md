@@ -26,10 +26,10 @@ Parent/Teacher/Class features are inherently relational (a teacher owns many cla
 - ✅ Prisma schema for all current Firestore collections
 - ✅ One-time Firestore → Postgres export/import script (`npm run migrate:firestore` in the backend repo)
 
-### Sprint 4 — Backend migration: files & cutover
+### Sprint 4 — Backend migration: files & cutover ✅
 - ✅ Homework attachments move to S3/R2 via presigned uploads
 - ✅ Android: `Rest*RepositoryImpl` implementations (Retrofit/OkHttp, token storage via DataStore)
-- ⬜ Swap to `Rest*Impl` in `RepositoryModule` (flag exists, defaults off); soak-test with Firebase impls kept available behind the flag, then cut over and drop Firestore/Auth/Storage SDKs (FCM can stay — it's push delivery only, independent of this). Blocked on device/emulator access and running the real production data migration.
+- ✅ Cut over to `Rest*Impl` in `RepositoryModule` and removed the Firebase SDKs, data sources and `firestore.rules`. The Firebase Cloud Messaging stub went too, so push notifications (Sprint 7) start from scratch.
 
 ### Sprint 5 — Parent role
 - Parent account type, parent↔student linking flow

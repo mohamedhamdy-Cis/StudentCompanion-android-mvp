@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 // The backend derives the student from the bearer token, so [studentId]
 // here is unused on the wire — kept only to satisfy the domain interface,
-// which still carries it from the Firestore-era (per-student query) design.
+// which still carries it from the original per-student query design.
 class RestSubjectRepositoryImpl @Inject constructor(
     private val api: StudentCompanionApi,
     private val refreshBus: RestDataRefreshBus,

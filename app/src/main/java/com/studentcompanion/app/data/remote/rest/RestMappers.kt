@@ -29,7 +29,6 @@ fun RestUserDto.toDomain() = User(
     role = runCatching { UserRole.valueOf(role) }.getOrDefault(UserRole.STUDENT),
     schoolId = schoolId,
     classId = classId,
-    parentId = null, // parent/student linking is now ParentStudentLink, not a scalar field — see ParentLinkRepository
 )
 
 fun RestSubjectDto.toDomain() = Subject(

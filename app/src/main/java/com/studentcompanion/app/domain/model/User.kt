@@ -9,5 +9,4 @@ data class User(
     val role: UserRole,
     val schoolId: String? = null,
     val classId: String? = null,
-    val parentId: String? = null, // set for Student users
 )

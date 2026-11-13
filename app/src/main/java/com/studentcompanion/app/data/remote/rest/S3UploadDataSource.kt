@@ -23,7 +23,7 @@ private const val JPEG_CONTENT_TYPE = "image/jpeg"
  * Compresses a homework image, asks the backend for a presigned PUT URL,
  * uploads directly to object storage (S3/R2 — never through our own API
  * server), and returns the metadata [submitHomework][StudentCompanionApi.submitHomework]
- * needs. Mirrors FirebaseStorageDataSource's role for the REST backend.
+ * needs.
  */
 @Singleton
 class S3UploadDataSource @Inject constructor(
@@ -55,9 +55,8 @@ class S3UploadDataSource @Inject constructor(
 
     // Concurrent since each image is an independent round trip (compress -> presign -> PUT).
     // NOTE: not atomic — if image 2 of 3 fails, image 1's upload still succeeded and is now
-    // orphaned in object storage with no DB reference (submitHomework is never called). This
-    // mirrors FirebaseStorageDataSource.uploadHomeworkImages's existing behavior; a real fix
-    // needs a backend delete-attachment endpoint to roll back the already-succeeded uploads.
+    // orphaned in object storage with no DB reference (submitHomework is never called). A real
+    // fix needs a backend delete-attachment endpoint to roll back the already-succeeded uploads.
     suspend fun uploadHomeworkImages(taskId: String, uris: List<Uri>): List<SubmitHomeworkAttachment> =
         coroutineScope {
             uris.map { uri -> async { uploadHomeworkImage(taskId, uri) } }.awaitAll()

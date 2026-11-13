@@ -6,7 +6,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * The REST backend has no Firestore-style push, so every Rest*RepositoryImpl
+ * The backend has no live push, so every Rest*RepositoryImpl
  * read method is naturally a single-shot `flow { emit(...) }`. Each write
  * method calls [notifyChanged] after a successful mutation, and every read
  * method re-runs its fetch on [changes] (in addition to its own initial
@@ -16,7 +16,7 @@ import javax.inject.Singleton
  *
  * This only covers changes made from THIS app instance in THIS process — it
  * is not a substitute for live multi-device sync, which would need real
- * push (websockets/polling) and is out of scope for this migration step.
+ * push (websockets/polling).
  */
 @Singleton
 class RestDataRefreshBus @Inject constructor() {

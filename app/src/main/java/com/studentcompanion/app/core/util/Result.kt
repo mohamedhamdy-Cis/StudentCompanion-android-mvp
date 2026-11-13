@@ -4,7 +4,7 @@ import kotlinx.coroutines.CancellationException
 
 /**
  * Generic wrapper for domain-layer outcomes so ViewModels never depend on
- * data-layer exception types (Firebase, Retrofit, etc.) directly.
+ * data-layer exception types (Retrofit, OkHttp, etc.) directly.
  */
 sealed interface Result<out T> {
     data class Success<T>(val data: T) : Result<T>
