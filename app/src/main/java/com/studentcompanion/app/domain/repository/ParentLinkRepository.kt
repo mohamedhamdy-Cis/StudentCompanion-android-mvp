@@ -7,12 +7,6 @@ import com.studentcompanion.app.domain.model.Task
 import com.studentcompanion.app.domain.model.User
 import kotlinx.coroutines.flow.Flow
 
-/**
- * Parent <-> student linking never existed on the Firestore-era backend —
- * this is a new, REST-backend-only capability from Sprint 5, so unlike the
- * other domain repositories there is no Firebase implementation to fall
- * back to (see RepositoryModule.kt).
- */
 interface ParentLinkRepository {
     suspend fun generateLinkCode(): Result<LinkCode>
     suspend fun redeemCode(code: String): Result<User>

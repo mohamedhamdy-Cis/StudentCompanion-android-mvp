@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 /**
  * Auth contract lives in the domain layer so ViewModels/use cases never
- * know whether login is backed by Firebase Auth or a future REST endpoint.
+ * know how login is implemented.
  */
 interface AuthRepository {
     fun currentUser(): Flow<User?>

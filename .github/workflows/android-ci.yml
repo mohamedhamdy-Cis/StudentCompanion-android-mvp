@@ -20,34 +20,6 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      # The Google Services plugin requires app/google-services.json to exist, but the real
-      # file (with production Firebase keys) is gitignored and never committed. This generates
-      # a throwaway placeholder with just enough shape to satisfy the plugin so CI can build and
-      # run unit tests/lint without touching any real Firebase project.
-      - name: Write placeholder google-services.json
-        run: |
-          cat > app/google-services.json <<'EOF'
-          {
-            "project_info": {
-              "project_number": "000000000000",
-              "project_id": "studentcompanion-ci",
-              "storage_bucket": "studentcompanion-ci.appspot.com"
-            },
-            "client": [
-              {
-                "client_info": {
-                  "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
-                  "android_client_info": { "package_name": "com.studentcompanion.app" }
-                },
-                "oauth_client": [],
-                "api_key": [{ "current_key": "CI_PLACEHOLDER_KEY" }],
-                "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
-              }
-            ],
-            "configuration_version": "1"
-          }
-          EOF
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 

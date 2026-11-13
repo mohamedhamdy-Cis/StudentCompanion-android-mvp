@@ -9,5 +9,5 @@ build/
 .cxx
 local.properties
 
-# Firebase config — do NOT commit real keys
+# No longer used by the build, but may still exist locally with real keys — keep it out of git
 app/google-services.json

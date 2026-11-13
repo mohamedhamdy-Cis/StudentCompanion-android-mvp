@@ -12,7 +12,7 @@ import javax.inject.Singleton
  * Downscales and re-encodes an image as JPEG before upload — a phone camera
  * photo is routinely 10-20 MB uncompressed, well past the 5 MB attachment
  * limit, and raw uploads cost real bandwidth for no visible benefit on a
- * phone screen. Shared by the Firebase Storage and REST (S3/R2) upload paths.
+ * phone screen.
  */
 @Singleton
 class ImageCompressor @Inject constructor(

@@ -1,5 +1,4 @@
-# Add project-specific ProGuard rules here.
-# Firebase and Hilt ship consumer ProGuard rules already, so this mostly
-# stays empty for the MVP. Revisit if reflection-based crashes appear
-# in release builds (common culprits: data classes used as Firestore
-# @DocumentId targets, and Hilt-generated components).
+# Gson fills the REST DTOs by reflection on field names, so R8 must not rename
+# or strip them — otherwise every backend response parses to empty objects in
+# release builds only.
+-keep class com.studentcompanion.app.data.remote.rest.dto.** { *; }

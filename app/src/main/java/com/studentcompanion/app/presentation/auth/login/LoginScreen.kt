@@ -12,10 +12,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.studentcompanion.app.domain.model.UserRole
 
-/**
- * Login with username + password (Firebase Auth under the hood, via a
- * synthetic-email mapping in FirebaseAuthDataSource — invisible here).
- */
+/** Login with username + password. */
 @Composable
 fun LoginScreen(
     onLoginSuccess: (UserRole) -> Unit,
