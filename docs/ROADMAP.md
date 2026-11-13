@@ -21,15 +21,15 @@ Parent/Teacher/Class features are inherently relational (a teacher owns many cla
 - JWT auth (access + refresh), real username/password storage — removes the synthetic-email workaround
 - Deploy to a staging environment (Railway/Render/Fly)
 
-### Sprint 3 — Backend migration: data
-- Users, Subjects, Tasks, Points endpoints in Node
-- Prisma schema for all current Firestore collections
-- One-time Firestore → Postgres export/import script
+### Sprint 3 — Backend migration: data ✅
+- ✅ Users, Subjects, Tasks, Points endpoints in Node
+- ✅ Prisma schema for all current Firestore collections
+- ✅ One-time Firestore → Postgres export/import script (`npm run migrate:firestore` in the backend repo)
 
 ### Sprint 4 — Backend migration: files & cutover
-- Homework attachments move to S3/R2 via presigned uploads
-- Android: `Rest*RepositoryImpl` implementations (Retrofit/OkHttp, token storage via DataStore)
-- Swap `@Binds` targets in `RepositoryModule`; soak-test with Firebase impls kept available behind a flag, then cut over and drop Firestore/Auth/Storage SDKs (FCM can stay — it's push delivery only, independent of this)
+- ✅ Homework attachments move to S3/R2 via presigned uploads
+- ✅ Android: `Rest*RepositoryImpl` implementations (Retrofit/OkHttp, token storage via DataStore)
+- ⬜ Swap to `Rest*Impl` in `RepositoryModule` (flag exists, defaults off); soak-test with Firebase impls kept available behind the flag, then cut over and drop Firestore/Auth/Storage SDKs (FCM can stay — it's push delivery only, independent of this). Blocked on device/emulator access and running the real production data migration.
 
 ### Sprint 5 — Parent role
 - Parent account type, parent↔student linking flow
